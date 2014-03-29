@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#fff0f0f0" >
+
+    <RelativeLayout
+        android:id="@+id/title"
+        android:layout_width="fill_parent"
+        android:layout_height="45.0dip"
+        android:background="@drawable/actionbar_background" >
+
+        <TextView
+            android:id="@+id/title_name"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:gravity="center"
+            android:text="选择城市"
+            android:textColor="#ffffff"
+            android:textSize="20.0dip" />
+
+        <ImageView
+            android:id="@+id/title_back"
+            android:layout_width="45.0dip"
+            android:layout_height="45.0dip"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/base_action_bar_back_normal" />
+
+        <ImageView
+            android:layout_width="1.0dip"
+            android:layout_height="40dip"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@id/title_back"
+            android:background="#A71717"
+            android:gravity="center"
+            android:src="@drawable/base_action_bar_back_normal" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/layout_search"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/title"
+        android:orientation="horizontal" >
+
+        <EditText
+            android:id="@+id/citySelect"
+            android:layout_width="fill_parent"
+            android:layout_height="45dip" />
+
+        <ImageView
+            android:layout_width="19dip"
+            android:layout_height="45dip"
+            android:layout_alignParentLeft="true"
+            android:layout_marginLeft="10dip"
+            android:gravity="center_vertical"
+            android:src="@drawable/magnifying_glass" />
+
+        <ImageView
+            android:id="@+id/imgDelete"
+            android:layout_width="19dip"
+            android:layout_height="45dip"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="10dip"
+            android:gravity="center_vertical"
+            android:src="@drawable/cross"
+            android:visibility="gone" />
+    </RelativeLayout>
+
+    <com.gqq.view.PinnedHeaderListView
+        android:id="@+id/mListView"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_below="@id/layout_search"
+        android:cacheColorHint="@android:color/transparent"
+        android:footerDividersEnabled="false"
+        android:headerDividersEnabled="false" />
+
+    <com.gqq.view.BladeView
+        android:id="@+id/mLetterListView"
+        android:layout_width="30dp"
+        android:layout_height="fill_parent"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/layout_search"
+        android:background="#00000000" />
+
+</RelativeLayout>
