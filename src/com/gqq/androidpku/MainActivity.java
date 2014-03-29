@@ -50,6 +50,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 	private Map<String, Integer> mWeatherIcon;// 天气图标
 	private static final int GET_WEATHER_RESULT = 3;
 	private static final int RESUME_EXIT_FALSE = 99;
+	private static final int REQUESTCODE = 1;
 
 	private boolean exitFlag = false;
 	Animation operatingAnim;
@@ -150,19 +151,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		operatingAnim = AnimationUtils.loadAnimation(this, R.anim.update_anim);
 		lin = new LinearInterpolator();
 		operatingAnim.setInterpolator(lin);
+
+		// 第一次更新天气
+		firstUpdateWeather();
 	}
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
-	}
-
-	@Override
-	protected void onStart() {
-		super.onStart();
-
+	private void firstUpdateWeather() {
+		// TODO Auto-generated method stub
 		Log.d(tag, "onstart");
 		SharedPreferences appPrefs = getSharedPreferences("selected_info", MODE_PRIVATE);
 		citycode = appPrefs.getString("citycode", "");
@@ -172,6 +167,20 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
 		Log.d("CityCode", citycode);
 		updateWeather();
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.main, menu);
+		return true;
+	}
+
+
+	@Override
+	protected void onStart() {
+		super.onStart();
+
 	}
 
 	@Override
@@ -211,7 +220,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		switch (v.getId()) {
 		case R.id.title_city_manager:
 			Intent i = new Intent(this, SelectCity.class);
-			startActivity(i);
+			// startActivity(i);
+			startActivityForResult(i, REQUESTCODE);
 			break;
 
 		case R.id.title_update:
@@ -228,6 +238,39 @@ public class MainActivity extends Activity implements View.OnClickListener {
 	private ImageView weatherImg, pmImg;
 
 	private ImageView mCityManagerBtn, mUpdate, imgRefresh;
+
+	/**
+	 * 如果从intent返回了数值，和文件中比对，看是否需要更新天气。
+	 */
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		// TODO Auto-generated method stub
+		super.onActivityResult(requestCode, resultCode, data);
+
+		if (resultCode == 2) {
+			if (requestCode == REQUESTCODE) {
+				// int request = data.getIntExtra("three", 0);
+				// 接收返回数据
+				// 接受到返回数据之后，和文件中的比对，如果citycode相同，则返回；如果不同，则刷新。
+				String resCity = data.getStringExtra("city");
+
+				SharedPreferences appPrefs = getSharedPreferences("selected_info", MODE_PRIVATE);
+				String filCity = appPrefs.getString("city", "");
+
+				if (!filCity.equals(resCity)) {
+					SharedPreferences.Editor prefsEditor = appPrefs.edit();
+					prefsEditor.clear();
+					prefsEditor.putString("city", data.getStringExtra("city"));
+					prefsEditor.putString("citycode", data.getStringExtra("citycode"));
+					prefsEditor.putString("province", data.getStringExtra("province"));
+					prefsEditor.commit();
+					citycode = data.getStringExtra("citycode");
+					province = data.getStringExtra("province");
+					updateWeather();
+				}
+			}
+		}
+	}
 
 	/**
 	 * 初始化显示页面

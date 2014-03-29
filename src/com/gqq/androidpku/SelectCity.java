@@ -149,13 +149,23 @@ public class SelectCity extends Activity implements View.OnClickListener {
 				List<City> tmpCities = ((CityAdapter) (((ListView) arg0).getAdapter()))
 						.getCityList();
 				// 将取得的信息存入到xml文件中。
-				SharedPreferences appPrefs = getSharedPreferences("selected_info", MODE_PRIVATE);
-				SharedPreferences.Editor prefsEditor = appPrefs.edit();
-				prefsEditor.clear();
-				prefsEditor.putString("city", tmpCities.get(arg2).getCity());
-				prefsEditor.putString("citycode", tmpCities.get(arg2).getNumber());
-				prefsEditor.putString("province", tmpCities.get(arg2).getProvince());
-				prefsEditor.commit();
+				// SharedPreferences appPrefs =
+				// getSharedPreferences("selected_info", MODE_PRIVATE);
+				// SharedPreferences.Editor prefsEditor = appPrefs.edit();
+				// prefsEditor.clear();
+				// prefsEditor.putString("city", tmpCities.get(arg2).getCity());
+				// prefsEditor.putString("citycode",
+				// tmpCities.get(arg2).getNumber());
+				// prefsEditor.putString("province",
+				// tmpCities.get(arg2).getProvince());
+				// prefsEditor.commit();
+
+				Intent intent = new Intent();
+				intent.putExtra("city", tmpCities.get(arg2).getCity());
+				intent.putExtra("citycode", tmpCities.get(arg2).getNumber());
+				intent.putExtra("province", tmpCities.get(arg2).getProvince());
+				// 通过Intent对象返回结果，调用setResult方法
+				setResult(2, intent);
 
 				// Log.i(TAG, "save completed!");
 				SelectCity.this.finish();
