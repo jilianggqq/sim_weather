@@ -33,7 +33,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
 	private final String WEATHER_URL_1 = "http://www.weather.com.cn/data/sk/";
 	// 利用该Url可以获得天气状况。
 	private final String WEATHER_URL_2 = "http://www.weather.com.cn/data/cityinfo/";
-	private final String WEATHER_URL_3 = "http://gqqapp.sinaapp.com/pm.php";
+	// http://gqqapp.sinaapp.com/pm.php
+	private final String WEATHER_URL_3 = "http://gqqapp.sinaapp.com/air.php";
 	private final String BEIJING_CITYCODE = "101010100";
 	private final String HTML = ".html";
 	private final String _N_A = "N/A";
@@ -45,6 +46,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 	private String quality;
 	private String citycode;
 	private String province = "北京";
+	private String cityname = "北京";
 
 	private Gson mGson;
 	private Map<String, Integer> mWeatherIcon;// 天气图标
@@ -162,6 +164,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		SharedPreferences appPrefs = getSharedPreferences("selected_info", MODE_PRIVATE);
 		citycode = appPrefs.getString("citycode", "");
 		province = appPrefs.getString("province", "北京");
+		cityname = appPrefs.getString("city", "北京");
 		if (null == citycode || "".equals(citycode))
 			citycode = BEIJING_CITYCODE;
 
@@ -252,12 +255,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
 				// int request = data.getIntExtra("three", 0);
 				// 接收返回数据
 				// 接受到返回数据之后，和文件中的比对，如果citycode相同，则返回；如果不同，则刷新。
-				String resCity = data.getStringExtra("city");
+				cityname = data.getStringExtra("city");
 
 				SharedPreferences appPrefs = getSharedPreferences("selected_info", MODE_PRIVATE);
 				String filCity = appPrefs.getString("city", "");
 
-				if (!filCity.equals(resCity)) {
+				if (!filCity.equals(cityname)) {
 					SharedPreferences.Editor prefsEditor = appPrefs.edit();
 					prefsEditor.clear();
 					prefsEditor.putString("city", data.getStringExtra("city"));
@@ -365,10 +368,28 @@ public class MainActivity extends Activity implements View.OnClickListener {
 				// System.out.println("pmJson:" + pmJson);
 				// mPM2_5
 				JSONArray array = new JSONArray(pmJson);
-				JSONObject json = array.getJSONObject(array.length() - 1);
 
-				mPM2_5 = json.getString("pm2_5");
-				quality = json.getString("quality");
+				boolean hasPmInfo = false;
+				for (int i = 0; i < array.length(); i++) {
+					JSONObject json = array.getJSONObject(i);
+					String city = json.getString("city");
+					if (city.equals(cityname)) {
+						mPM2_5 = json.getString("pm2_5");
+						quality = json.getString("quality");
+						hasPmInfo = true;
+						break;
+					}
+				}
+
+				if (!hasPmInfo) {
+					mPM2_5 = null;
+					quality = null;
+				}
+
+				// JSONObject json = array.getJSONObject(array.length() - 1);
+				//
+				// mPM2_5 = json.getString("pm2_5");
+				// quality = json.getString("quality");
 			}
 
 		} catch (JSONException e) {
