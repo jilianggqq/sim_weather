@@ -10,17 +10,21 @@ import org.apache.http.impl.client.*;
 import org.apache.http.util.*;
 import org.json.*;
 
+import android.R.*;
 import android.annotation.*;
 import android.app.*;
 import android.content.*;
 import android.os.*;
+import android.os.Process;
 import android.text.*;
 import android.util.*;
 import android.view.*;
 import android.view.animation.*;
 import android.widget.*;
 
+import com.baidu.location.*;
 import com.google.gson.*;
+import com.gqq.app.*;
 import com.gqq.bean.*;
 import com.gqq.util.*;
 
@@ -44,19 +48,23 @@ public class MainActivity extends Activity implements View.OnClickListener {
 	private String mWeatherState;
 	private String mPM2_5;
 	private String quality;
-	private String citycode;
-	private String province = "北京";
-	private String cityname = "北京";
+	// private String citycode;
+	// private String province = "北京";
+	// private String cityname = "北京";
+	private BasicCityInfo cityInfo = new BasicCityInfo("北京", "北京");
 
 	private Gson mGson;
 	private Map<String, Integer> mWeatherIcon;// 天气图标
 	private static final int GET_WEATHER_RESULT = 3;
+	private static final int GET_CITY_FALSE = 98;
 	private static final int RESUME_EXIT_FALSE = 99;
 	private static final int REQUESTCODE = 1;
+	private static final String baidumaptag = "baidumap";
 
 	private boolean exitFlag = false;
 	Animation operatingAnim;
 	LinearInterpolator lin;
+	private LocationClient mLocClient;
 
 	// 定义一个Handler，用于线程同步。
 	@SuppressLint("HandlerLeak")
@@ -67,9 +75,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
 				updateWeatherInfo();
 				// 让图标停止旋转
 				resumeUpdateIcon();
-
+				// 保存缓存文档，下次进入后自动加载
+				updateFile();
 				break;
-
+			case GET_CITY_FALSE:
+				resumeUpdateIcon();
+				break;
 			case RESUME_EXIT_FALSE:
 				exitFlag = false;
 				break;
@@ -145,6 +156,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		mCityManagerBtn = (ImageView) findViewById(R.id.title_city_manager);
 		mCityManagerBtn.setOnClickListener(this);
 
+		// 百度定位的测试
+		// mTestlocBtn = (Button) findViewById(R.id.btn_testloc);
+		// mTestlocBtn.setOnClickListener(this);
+
 		mUpdate = (ImageView) findViewById(R.id.title_update);
 		imgRefresh = (ImageView) findViewById(R.id.imgRefresh);
 		mUpdate.setOnClickListener(this);
@@ -154,22 +169,90 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		lin = new LinearInterpolator();
 		operatingAnim.setInterpolator(lin);
 
+		// 设置本地位置
+		mLocClient = ((MyApplication) getApplication()).mLocationClient;
+		mLocation = (ImageView) findViewById(R.id.title_location);
+		mLocation.setOnClickListener(this);
+
+		mLocClient.registerLocationListener(new BDLocationListener() {
+
+			@Override
+			public void onReceiveLocation(BDLocation location) {
+				// 下面这个StringBuffer是个测试的方法。
+				if (location == null)
+					return;
+				StringBuffer sb = new StringBuffer(256);
+				sb.append("time : ");
+				sb.append(location.getTime());
+				sb.append("\nerror code : ");
+				sb.append(location.getLocType());
+				sb.append("\nlatitude : ");
+				sb.append(location.getLatitude());
+				sb.append("\nlontitude : ");
+				sb.append(location.getLongitude());
+				sb.append("\nradius : ");
+				sb.append(location.getRadius());
+				if (location.getLocType() == BDLocation.TypeGpsLocation) {
+					sb.append("\nspeed : ");
+					sb.append(location.getSpeed());
+					sb.append("\nsatellite : ");
+					sb.append(location.getSatelliteNumber());
+				} else if (location.getLocType() == BDLocation.TypeNetWorkLocation) {
+					/**
+					 * 格式化显示地址信息
+					 */
+					sb.append("\n省：");
+					sb.append(location.getProvince());
+					sb.append("\n市：");
+					sb.append(location.getCity());
+					sb.append("\n区/县：");
+					sb.append(location.getDistrict());
+					sb.append("\naddr : ");
+					sb.append(location.getAddrStr());
+				}
+				sb.append("\nsdk version : ");
+				sb.append(mLocClient.getVersion());
+				sb.append("\nisCellChangeFlag : ");
+				sb.append(location.isCellChangeFlag());
+				Log.i(baidumaptag, sb.toString());
+				// T.showLong(getBaseContext(), sb.toString());
+
+				// 刷新天气
+				String cityname = location.getDistrict();
+				cityname = cityname.substring(0, cityname.length() - 1);
+				cityInfo.setCityname(cityname);
+				String province = location.getProvince();
+				province = province.substring(0, province.length() - 1);
+				cityInfo.setProvince(province);
+				// 更新已存在的文件
+				
+				mLocClient.stop();
+				// 在子线程中，我们再去数据库中查询citycode，免得主线程太慢。
+				updateWeather(true);
+			}
+
+			@Override
+			public void onReceivePoi(BDLocation poiLocation) {
+			}
+
+		});
+
 		// 第一次更新天气
 		firstUpdateWeather();
 	}
 
+	/**
+	 * 刚进入地图，加载天气信息。
+	 */
 	private void firstUpdateWeather() {
-		// TODO Auto-generated method stub
 		Log.d(tag, "onstart");
 		SharedPreferences appPrefs = getSharedPreferences("selected_info", MODE_PRIVATE);
-		citycode = appPrefs.getString("citycode", "");
-		province = appPrefs.getString("province", "北京");
-		cityname = appPrefs.getString("city", "北京");
-		if (null == citycode || "".equals(citycode))
-			citycode = BEIJING_CITYCODE;
+		cityInfo.setCitycode(appPrefs.getString("citycode", BEIJING_CITYCODE));
+		cityInfo.setProvince(appPrefs.getString("province", "北京"));
+		cityInfo.setCityname(appPrefs.getString("city", "北京"));
 
-		Log.d("CityCode", citycode);
-		updateWeather();
+		Log.d("CityCode", cityInfo.getCitycode());
+		updateWeather(false);
 	}
 
 	@Override
@@ -178,7 +261,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
-
 
 	@Override
 	protected void onStart() {
@@ -229,25 +311,69 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
 		case R.id.title_update:
 
-			updateWeather();
+			updateWeather(false);
+			break;
+		case R.id.title_location:
+			updateLocalWeather();
 			break;
 		default:
 			break;
 		}
 	}
 
+	/**
+	 * 更新本地的天气
+	 */
+	private void updateLocalWeather() {
+		Log.d(baidumaptag, "updateLocalWeather");
+		setLocationOption();
+		mLocClient.start();
+
+		if (mLocClient != null && mLocClient.isStarted()) {
+			// setLocationOption();
+			mLocClient.requestLocation();
+		} else
+			Log.d(baidumaptag, "locClient is null or not started");
+		Log.d(baidumaptag, "... mlocBtn onClick... pid=" + Process.myPid());
+		Log.d(baidumaptag, "version:" + mLocClient.getVersion());
+
+	}
+
+	private void setLocationOption() {
+		LocationClientOption option = new LocationClientOption();
+		option.setOpenGps(true);
+		option.setCoorType("bd09ll");
+		option.setServiceName("com.baidu.location.service_v2.9");
+		option.setPoiExtraInfo(true);
+		option.setAddrType("all");
+		option.setScanSpan(500);
+		option.setPoiDistance(1000);
+		// option.setScanSpan(3000);
+
+		// if (mPriorityCheck.isChecked()) {
+		// option.setPriority(LocationClientOption.NetWorkFirst); //
+		// } else {
+		// option.setPriority(LocationClientOption.GpsFirst); //
+		// }
+
+		option.setPoiNumber(10);
+		option.disableCache(true);
+		mLocClient.setLocOption(option);
+	}
+
 	private TextView cityTv, timeTv, humidityTv, weekTv, pmDataTv, pmQualityTv, temperatureTv,
 			climateTv, windTv, provinceTv;
 	private ImageView weatherImg, pmImg;
 
-	private ImageView mCityManagerBtn, mUpdate, imgRefresh;
+	private ImageView mCityManagerBtn, mUpdate, imgRefresh, mLocation;
+
+	private Button mTestlocBtn;
 
 	/**
 	 * 如果从intent返回了数值，和文件中比对，看是否需要更新天气。
 	 */
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		// TODO Auto-generated method stub
 		super.onActivityResult(requestCode, resultCode, data);
 
 		if (resultCode == 2) {
@@ -255,24 +381,28 @@ public class MainActivity extends Activity implements View.OnClickListener {
 				// int request = data.getIntExtra("three", 0);
 				// 接收返回数据
 				// 接受到返回数据之后，和文件中的比对，如果citycode相同，则返回；如果不同，则刷新。
-				cityname = data.getStringExtra("city");
+				cityInfo.setCityname(data.getStringExtra("city"));
 
 				SharedPreferences appPrefs = getSharedPreferences("selected_info", MODE_PRIVATE);
 				String filCity = appPrefs.getString("city", "");
 
-				if (!filCity.equals(cityname)) {
-					SharedPreferences.Editor prefsEditor = appPrefs.edit();
-					prefsEditor.clear();
-					prefsEditor.putString("city", data.getStringExtra("city"));
-					prefsEditor.putString("citycode", data.getStringExtra("citycode"));
-					prefsEditor.putString("province", data.getStringExtra("province"));
-					prefsEditor.commit();
-					citycode = data.getStringExtra("citycode");
-					province = data.getStringExtra("province");
-					updateWeather();
+				if (!filCity.equals(cityInfo.getCityname())) {
+					cityInfo.setCitycode(data.getStringExtra("citycode"));
+					cityInfo.setProvince(data.getStringExtra("province"));
+					updateWeather(false);
 				}
 			}
 		}
+	}
+
+	public void updateFile() {
+		SharedPreferences appPrefs = getSharedPreferences("selected_info", MODE_PRIVATE);
+		SharedPreferences.Editor prefsEditor = appPrefs.edit();
+		prefsEditor.clear();
+		prefsEditor.putString("city", cityInfo.getCityname());
+		prefsEditor.putString("citycode", cityInfo.getCitycode());
+		prefsEditor.putString("province", cityInfo.getProvince());
+		prefsEditor.commit();
 	}
 
 	/**
@@ -310,7 +440,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 	/**
 	 * 更新天气
 	 */
-	private void updateWeather() {
+	private void updateWeather(final boolean needUpdateCitycode) {
 
 		rotateUpdateIcon();
 
@@ -328,8 +458,31 @@ public class MainActivity extends Activity implements View.OnClickListener {
 				// } catch (InterruptedException e) {
 				// e.printStackTrace();
 				// }
+				// 这种情况下，表示城市名是对的，但是城市的code不一定对，因为百度的接口没有返回code
+				if (needUpdateCitycode) {
+					if (!updateCitycode()) {
+						mHandler.sendEmptyMessage(GET_CITY_FALSE);
+						return;
+					}
+				}
+
 				getTodayWeatherInfo();
 				mHandler.sendEmptyMessage(GET_WEATHER_RESULT);
+			}
+
+			private boolean updateCitycode() {
+				CityDB cityDB = new CityDB(getBaseContext(), "city.db");
+				try {
+					City city = cityDB.getCity(cityInfo.getCityname());
+					cityInfo.setCitycode(city.getNumber());
+					cityDB.closeDB();
+					return true;
+				} catch (Exception e) {
+					cityDB.closeDB();
+					Log.d(baidumaptag, e.getMessage());
+					return false;
+				}
+
 			};
 		}.start();
 
@@ -339,13 +492,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
 	 * 获得现在的天气
 	 */
 	private void getTodayWeatherInfo() {
-		String url = WEATHER_URL_1 + citycode + HTML;
+		String url = WEATHER_URL_1 + cityInfo.getCitycode() + HTML;
 		System.out.println(url);
 		String weatherResult = connServerForResult(url);
 		parseTodayWeaterInfo(weatherResult);
 
 		// 获得天气的状况
-		String state = connServerForResult(WEATHER_URL_2 + citycode + HTML);
+		String state = connServerForResult(WEATHER_URL_2 + cityInfo.getCitycode() + HTML);
 		// System.out.println("state:" + state);
 		try {
 
@@ -373,7 +526,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 				for (int i = 0; i < array.length(); i++) {
 					JSONObject json = array.getJSONObject(i);
 					String city = json.getString("city");
-					if (city.equals(cityname)) {
+					if (city.equals(cityInfo.getCityname())) {
 						mPM2_5 = json.getString("pm2_5");
 						quality = json.getString("quality");
 						hasPmInfo = true;
@@ -453,7 +606,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 			timeTv.setText("今日" + mWeatherInfo.getTime() + "发布");
 			windTv.setText(mWeatherInfo.getWD() + " " + mWeatherInfo.getWS());
 			weatherImg.setImageResource(getWeatherIcon());
-			provinceTv.setText(province);
+			provinceTv.setText(cityInfo.getProvince());
 
 		} else {
 			cityTv.setText("北京");

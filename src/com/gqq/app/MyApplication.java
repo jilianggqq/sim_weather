@@ -2,14 +2,12 @@ package com.gqq.app;
 
 import java.io.*;
 
-import org.w3c.dom.ls.*;
-
-import com.gqq.util.*;
-
-import android.R.*;
 import android.app.*;
 import android.os.*;
 import android.util.*;
+
+import com.baidu.location.*;
+import com.gqq.util.*;
 
 public class MyApplication extends Application {
 
@@ -19,8 +17,17 @@ public class MyApplication extends Application {
 
 	private CityDB cityDB;
 
+	// 与定位有关的参数
+	public LocationClient mLocationClient = null;
+	// public GeofenceClient mGeofenceClient;
+
 	@Override
 	public void onCreate() {
+		mLocationClient = new LocationClient(this);
+		// mLocationClient.setAK("697f50541f8d4779124896681cb6584d");
+		// 注意替换为自己的key
+		mLocationClient.setAK("oj2PPuCMlZQWiU2Rir3aGR9s");
+
 		super.onCreate();
 		Log.i(AppTag, "oncreate");
 		myApplication = this;

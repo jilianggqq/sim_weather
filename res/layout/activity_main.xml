@@ -186,6 +186,13 @@
                 android:textSize="25sp" />
         </LinearLayout>
 
+        <!-- Button
+            android:id="@+id/btn_testloc"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:text="测试定位" /> -->
+        
         <!--
         Button
             android:id="@+id/btn_dialog"
