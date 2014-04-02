@@ -62,6 +62,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
 	private Gson mGson;
 	private Map<String, Integer> mWeatherIcon;// 天气图标
+	private Map<String, Integer> mBeijingBgImg;// 天气图标
+	private Map<String, Integer> mOtherBgImg;// 天气图标
 	private static final int GET_WEATHER_RESULT = 3;
 	private static final int GET_CITY_FALSE = 98;
 	private static final int RESUME_EXIT_FALSE = 99;
@@ -152,6 +154,68 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		mWeatherIcon.put("中雨", R.drawable.biz_plugin_weather_zhongyu);
 	}
 
+	/**
+	 * 初始化北京背景图片
+	 */
+	private void initBeijingBgMap() {
+		mBeijingBgImg = new HashMap<String, Integer>();
+		mBeijingBgImg.put("暴雪", R.drawable.biz_plugin_weather_beijing_yu_bg);
+		mBeijingBgImg.put("暴雨", R.drawable.biz_plugin_weather_beijing_yu_bg);
+		mBeijingBgImg.put("大暴雨", R.drawable.biz_plugin_weather_beijing_yu_bg);
+		mBeijingBgImg.put("大雪", R.drawable.biz_plugin_weather_beijing_yu_bg);
+		mBeijingBgImg.put("大雨", R.drawable.biz_plugin_weather_beijing_yu_bg);
+
+		mBeijingBgImg.put("多云", R.drawable.biz_plugin_weather_beijing_yin_bg);
+		mBeijingBgImg.put("雷阵雨", R.drawable.biz_plugin_weather_beijing_yu_bg);
+		mBeijingBgImg.put("雷阵雨冰雹", R.drawable.biz_plugin_weather_beijing_yu_bg);
+		mBeijingBgImg.put("晴", R.drawable.biz_plugin_weather_beijing_qing_bg);
+		mBeijingBgImg.put("沙尘暴", R.drawable.biz_plugin_weather_beijing_mai_bg);
+
+		mBeijingBgImg.put("特大暴雨", R.drawable.biz_plugin_weather_beijing_yu_bg);
+		mBeijingBgImg.put("雾", R.drawable.biz_plugin_weather_beijing_mai_bg);
+		mBeijingBgImg.put("霾", R.drawable.biz_plugin_weather_beijing_mai_bg);
+		mBeijingBgImg.put("小雪", R.drawable.biz_plugin_weather_beijing_yu_bg);
+		mBeijingBgImg.put("小雨", R.drawable.biz_plugin_weather_beijing_yu_bg);
+		mBeijingBgImg.put("阴", R.drawable.biz_plugin_weather_beijing_yin_bg);
+
+		mBeijingBgImg.put("雨夹雪", R.drawable.biz_plugin_weather_beijing_yu_bg);
+		mBeijingBgImg.put("阵雪", R.drawable.biz_plugin_weather_beijing_yu_bg);
+		mBeijingBgImg.put("阵雨", R.drawable.biz_plugin_weather_beijing_yu_bg);
+		mBeijingBgImg.put("中雪", R.drawable.biz_plugin_weather_beijing_yu_bg);
+		mBeijingBgImg.put("中雨", R.drawable.biz_plugin_weather_beijing_yu_bg);
+	}
+
+	/**
+	 * 初始化其它各地背景图片
+	 */
+	private void initOtherBgMap() {
+		mOtherBgImg = new HashMap<String, Integer>();
+		mOtherBgImg.put("暴雪", R.drawable.biz_plugin_weather_zg_yu_bg);
+		mOtherBgImg.put("暴雨", R.drawable.biz_plugin_weather_zg_yu_bg);
+		mOtherBgImg.put("大暴雨", R.drawable.biz_plugin_weather_zg_yu_bg);
+		mOtherBgImg.put("大雪", R.drawable.biz_plugin_weather_zg_yu_bg);
+		mOtherBgImg.put("大雨", R.drawable.biz_plugin_weather_zg_yu_bg);
+
+		mOtherBgImg.put("多云", R.drawable.biz_plugin_weather_zg_yin_bg);
+		mOtherBgImg.put("雷阵雨", R.drawable.biz_plugin_weather_zg_yu_bg);
+		mOtherBgImg.put("雷阵雨冰雹", R.drawable.biz_plugin_weather_zg_yu_bg);
+		mOtherBgImg.put("晴", R.drawable.biz_plugin_weather_zg_qing_bg);
+		mOtherBgImg.put("沙尘暴", R.drawable.biz_plugin_weather_zg_yin_bg);
+
+		mOtherBgImg.put("特大暴雨", R.drawable.biz_plugin_weather_zg_yu_bg);
+		mOtherBgImg.put("雾", R.drawable.biz_plugin_weather_zg_yin_bg);
+		mOtherBgImg.put("霾", R.drawable.biz_plugin_weather_zg_yin_bg);
+		mOtherBgImg.put("小雪", R.drawable.biz_plugin_weather_zg_yu_bg);
+		mOtherBgImg.put("小雨", R.drawable.biz_plugin_weather_zg_yu_bg);
+		mOtherBgImg.put("阴", R.drawable.biz_plugin_weather_zg_yin_bg);
+
+		mOtherBgImg.put("雨夹雪", R.drawable.biz_plugin_weather_zg_yu_bg);
+		mOtherBgImg.put("阵雪", R.drawable.biz_plugin_weather_zg_yu_bg);
+		mOtherBgImg.put("阵雨", R.drawable.biz_plugin_weather_zg_yu_bg);
+		mOtherBgImg.put("中雪", R.drawable.biz_plugin_weather_zg_yu_bg);
+		mOtherBgImg.put("中雨", R.drawable.biz_plugin_weather_zg_yu_bg);
+	}
+
 	// http://www.weather.cn
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -162,6 +226,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		agent.sync();
 
 		initWeatherIconMap();
+		initBeijingBgMap();
+		initOtherBgMap();
 		requestWindowFeature(Window.FEATURE_NO_TITLE);//
 		setContentView(R.layout.activity_main);
 		init();
@@ -684,6 +750,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
 		weekTv.setText("今天" + DateUtil.getDay());
 		if (null != mWeatherInfo) {
+			// 动态改变RelativeLayout的图片
+			RelativeLayout rl = (RelativeLayout) findViewById(R.id.layoutParent);
+			rl.setBackgroundResource(getBgImg());
+
 			cityTv.setText(mWeatherInfo.getCity());
 			temperatureTv.setText(mWeatherInfo.getTemp() + "℃");
 			humidityTv.setText(mWeatherInfo.getSD());
@@ -715,9 +785,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		if (null != mPM2_5 && null != quality) {
 			pmDataTv.setText(mPM2_5);
 			pmQualityTv.setText(quality);
+			if (Integer.parseInt(mPM2_5) >= 100) {
+				pmImg.setImageResource(R.drawable.biz_plugin_weather_greater_300);
+			} else {
+				pmImg.setImageResource(R.drawable.biz_plugin_weather_0_50);
+			}
 		} else {
 			pmDataTv.setText(_N_A);
 			pmQualityTv.setText(_N_A);
+			pmImg.setImageResource(R.drawable.biz_plugin_weather_0_50);
 		}
 
 		// 测试图片转换
@@ -730,11 +806,45 @@ public class MainActivity extends Activity implements View.OnClickListener {
 	 * @return
 	 */
 	public int getWeatherIcon() {
-		String climate = mWeatherState;
 		// climate = "小雨";
 		int weatherRes = R.drawable.biz_plugin_weather_qing;
+		String climate = getClimate();
 		if (TextUtils.isEmpty(climate))
 			return weatherRes;
+		if (mWeatherIcon.containsKey(climate)) {
+			weatherRes = mWeatherIcon.get(climate);
+		}
+		return weatherRes;
+	}
+
+	/**
+	 * 获得背景图片
+	 * 
+	 * @return
+	 */
+	public int getBgImg() {
+
+		int weatherRes;
+		if ("北京".equals(cityInfo.getProvince()))
+			weatherRes = R.drawable.biz_plugin_weather_beijing_yin_bg;
+		else {
+			weatherRes = R.drawable.biz_plugin_weather_zg_yin_bg;
+		}
+		String climate = getClimate();
+		if (TextUtils.isEmpty(climate))
+			return weatherRes;
+
+		if ("北京".equals(cityInfo.getProvince()) && mBeijingBgImg.containsKey(climate)) {
+			weatherRes = mBeijingBgImg.get(climate);
+		} else {
+			weatherRes = mOtherBgImg.get(climate);
+		}
+
+		return weatherRes;
+	}
+
+	private String getClimate() {
+		String climate = mWeatherState;
 		String[] strs = { "晴", "晴" };
 		if (climate.contains("转")) {// 天气带转字，取前面那部分
 			strs = climate.split("转");
@@ -744,10 +854,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 				climate = strs[1];
 			}
 		}
-		if (mWeatherIcon.containsKey(climate)) {
-			weatherRes = mWeatherIcon.get(climate);
-		}
-		return weatherRes;
+		return climate;
 	}
 
 	/**
