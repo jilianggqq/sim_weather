@@ -14,6 +14,10 @@ import android.R.*;
 import android.annotation.*;
 import android.app.*;
 import android.content.*;
+import android.content.res.*;
+import android.graphics.*;
+import android.graphics.drawable.*;
+import android.net.*;
 import android.os.*;
 import android.os.Process;
 import android.text.*;
@@ -27,6 +31,9 @@ import com.google.gson.*;
 import com.gqq.app.*;
 import com.gqq.bean.*;
 import com.gqq.util.*;
+import com.umeng.analytics.MobclickAgent;
+import com.umeng.fb.FeedbackAgent;
+import com.umeng.update.UmengUpdateAgent;
 
 public class MainActivity extends Activity implements View.OnClickListener {
 	String tag = "生命周期";
@@ -65,6 +72,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 	Animation operatingAnim;
 	LinearInterpolator lin;
 	private LocationClient mLocClient;
+	FeedbackAgent agent;
 
 	// 定义一个Handler，用于线程同步。
 	@SuppressLint("HandlerLeak")
@@ -148,6 +156,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		// 通知用户有新的消息
+		agent = new FeedbackAgent(this);
+		agent.sync();
+
 		initWeatherIconMap();
 		requestWindowFeature(Window.FEATURE_NO_TITLE);//
 		setContentView(R.layout.activity_main);
@@ -163,6 +176,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		mUpdate = (ImageView) findViewById(R.id.title_update);
 		imgRefresh = (ImageView) findViewById(R.id.imgRefresh);
 		mUpdate.setOnClickListener(this);
+		mFeedback = (ImageView) findViewById(R.id.title_feedback);
+		mFeedback.setOnClickListener(this);
+		mShare = (ImageView) findViewById(R.id.title_share);
+		mShare.setOnClickListener(this);
 
 		// 设置旋转变量
 		operatingAnim = AnimationUtils.loadAnimation(this, R.anim.update_anim);
@@ -219,13 +236,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
 				// 刷新天气
 				String cityname = location.getDistrict();
+				// 设置城市名
 				cityname = cityname.substring(0, cityname.length() - 1);
 				cityInfo.setCityname(cityname);
+				// 设置省份
 				String province = location.getProvince();
 				province = province.substring(0, province.length() - 1);
 				cityInfo.setProvince(province);
 				// 更新已存在的文件
-				
 				mLocClient.stop();
 				// 在子线程中，我们再去数据库中查询citycode，免得主线程太慢。
 				updateWeather(true);
@@ -239,6 +257,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
 		// 第一次更新天气
 		firstUpdateWeather();
+		// UmengUpdateAgent.update(this);
+
+		// 不只是wifi下才更新
+		UmengUpdateAgent.setUpdateOnlyWifi(false);
+		UmengUpdateAgent.update(this);
 	}
 
 	/**
@@ -277,12 +300,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
 	@Override
 	public void onResume() {
 		super.onResume();
+		MobclickAgent.onResume(this);
 		Log.d(tag, "In the onResume() event");
 	}
 
 	@Override
 	protected void onPause() {
 		super.onPause();
+		MobclickAgent.onPause(this);
 		Log.d(tag, "pause");
 	}
 
@@ -316,9 +341,68 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		case R.id.title_location:
 			updateLocalWeather();
 			break;
+		case R.id.title_feedback:
+			agent.startFeedbackActivity();
+			break;
+		case R.id.title_share:
+			// Drawable d = getResources().getDrawable(R.drawable.erweima);
+			// d.
+			// Bitmap b = (BitmapDrawable) d;
+
+			// Resources r = this.getBaseContext().getResources();
+			// InputStream is = r.openRawResource(R.drawable.erweima);
+			// BitmapDrawable bmpDraw = new BitmapDrawable(is);
+			// Bitmap bmp = bmpDraw.getBitmap();
+			//
+			// Intent intent = new Intent(Intent.ACTION_SEND);
+			// intent.setType("image/*");
+			// intent.putExtra(Intent.EXTRA_SUBJECT, "分享");
+			// intent.putExtra(Intent.EXTRA_TEXT,
+			// "下载地址：http://gqqapp.sinaapp.com/simweather.apk");
+			// intent.putExtra(Intent.EXTRA_STREAM,is.);
+			// intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			// startActivity(Intent.createChooser(intent, getTitle()));
+			shareMsg(this, getTitle(), "下载地址", "http://gqqapp.sinaapp.com/simweather.apk");
+			break;
 		default:
 			break;
 		}
+	}
+
+	/**
+	 * 分享功能
+	 * 
+	 * @param context
+	 *            上下文
+	 * @param charSequence
+	 *            Activity的名字
+	 * @param msgTitle
+	 *            消息标题
+	 * @param msgText
+	 *            消息内容
+	 * @param imgPath
+	 *            图片路径，不分享图片则传null
+	 */
+	public void shareMsg(Context context, CharSequence charSequence, String msgTitle, String msgText) {
+		Intent intent = new Intent(Intent.ACTION_SEND);
+		intent.setType("image/*");
+		// Resources res = this.getBaseContext().getResources();
+		// Bitmap bitmap = BitmapFactory.decodeResource(res,
+		// R.drawable.erweima);
+		// intent.putExtra(Intent.EXTRA_STREAM, bitmap);
+		// 分享drawable中的图片。
+		Uri imageUri = Uri.parse("android.resource://com.gqq.androidpku/" + R.drawable.erweima);
+		// 获取网上的图片还是不行啊
+		// Uri imageUri = Uri.parse("http://gqqapp.sinaapp.com/erweima.png");
+		Log.d("image", imageUri.toString());
+
+		intent.setType("image/*");
+
+		intent.putExtra(Intent.EXTRA_SUBJECT, msgTitle);
+		intent.putExtra(Intent.EXTRA_TEXT, msgText);
+		intent.putExtra(Intent.EXTRA_STREAM, imageUri);
+		// intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		context.startActivity(Intent.createChooser(intent, charSequence));
 	}
 
 	/**
@@ -365,7 +449,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 			climateTv, windTv, provinceTv;
 	private ImageView weatherImg, pmImg;
 
-	private ImageView mCityManagerBtn, mUpdate, imgRefresh, mLocation;
+	private ImageView mCityManagerBtn, mUpdate, imgRefresh, mLocation, mFeedback, mShare;
 
 	private Button mTestlocBtn;
 
