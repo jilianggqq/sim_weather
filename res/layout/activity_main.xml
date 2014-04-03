@@ -52,8 +52,7 @@
             android:layout_height="45dip"
             android:layout_toLeftOf="@id/title_location"
             android:src="@drawable/title_share" />
-        
-        
+
         <ImageView
             android:id="@+id/title_feedback"
             android:layout_width="40dip"
@@ -195,13 +194,14 @@
                 android:textSize="25sp" />
         </LinearLayout>
 
-        <!-- Button
+        <!--
+             Button
             android:id="@+id/btn_testloc"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:text="测试定位" /> -->
-        
+            android:text="测试定位" 
+        -->
         <!--
         Button
             android:id="@+id/btn_dialog"
@@ -217,17 +217,27 @@
             android:layout_height="wrap_content"
             android:layout_above="@id/btn_dialog"
             android:onClick="onClickProgress"
-            android:text="Click to display a dialog" /
+            android:text="Click to display a dialog" 
         -->
     </RelativeLayout>
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/viewpager"
+        android:layout_width="fill_parent"
+        android:layout_height="165.0dip"
+        android:layout_below="@id/part3"
+        android:overScrollMode="never"
+        android:paddingLeft="10dip"
+        android:paddingRight="10dip" />
 
     <RelativeLayout
         android:id="@+id/footer"
         android:layout_width="fill_parent"
         android:layout_height="70dp"
         android:layout_alignParentBottom="true"
-        android:gravity="center"
-        android:background="@color/gray" >
+        android:background="@color/gray"
+        android:gravity="center" >
+
         <ImageView
             android:id="@+id/imgRefresh"
             android:layout_width="45dip"

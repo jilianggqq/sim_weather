@@ -47,6 +47,8 @@ public class SelectCity extends Activity implements View.OnClickListener {
 				} else if (mAdapter != null) {
 					mAdapter.notifyDataSetChanged();
 				}
+				// edit_search.setSelected(false);
+				// edit_search.clearFocus();
 				break;
 			case COPY_DB_SUCCESS:
 				requestData();
@@ -67,7 +69,7 @@ public class SelectCity extends Activity implements View.OnClickListener {
 			"M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
 	private int[] counts;
 	private PinnedHeaderListView mListView;
-	private ImageView mBackBtn, mDelete;
+	private ImageView mBackBtn, mDelete, mSearch;
 	private BladeView mLetterListView;
 
 	@Override
@@ -81,8 +83,9 @@ public class SelectCity extends Activity implements View.OnClickListener {
 
 		// 搜索控件
 		edit_search = (EditText) findViewById(R.id.citySelect);
-		// 为输入添加TextWatcher监听文字的变化
 		edit_search.addTextChangedListener(new TextWatcher_Enum());
+		// edit_search.clearFocus();
+
 
 		// 返回控件
 		mBackBtn = (ImageView) findViewById(R.id.title_back);
@@ -91,7 +94,19 @@ public class SelectCity extends Activity implements View.OnClickListener {
 		mDelete = (ImageView) findViewById(R.id.imgDelete);
 		mDelete.setOnClickListener(this);
 
+		// 把焦点定位在其它控件上，这样焦点会很自然的离开EditText
+		mSearch = (ImageView) findViewById(R.id.imgSearch);
+		mSearch.setFocusable(true);
+		mSearch.setFocusableInTouchMode(true);
+		mSearch.requestFocus();
+		mSearch.requestFocusFromTouch();
+
 		requestData();
+	}
+
+	@Override
+	protected void onStart() {
+		super.onStart();
 	}
 
 	private void requestData() {

@@ -50,6 +50,7 @@
             android:layout_height="45dip" />
 
         <ImageView
+            android:id="@+id/imgSearch"
             android:layout_width="19dip"
             android:layout_height="45dip"
             android:layout_alignParentLeft="true"
