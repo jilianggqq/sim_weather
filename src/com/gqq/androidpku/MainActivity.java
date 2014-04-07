@@ -244,10 +244,10 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 		super.onCreate(savedInstanceState);
 
 		// 设置背景图
-		if (initContentView()) {
-			setContentView(R.layout.start);
-			return;
-		}
+		// if (initContentView()) {
+		// setContentView(R.layout.start);
+		// return;
+		// }
 
 		// 通知用户有新的消息
 		agent = new FeedbackAgent(this);
@@ -431,11 +431,6 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 			// startActivity(Intent.createChooser(intent, getTitle()));
 			shareMsg(this, getTitle(), "下载地址", "http://gqqapp.sinaapp.com/simweather.apk");
 			break;
-		case R.id.btnEnter:
-			Intent i2 = new Intent(this, SelectCity.class);
-			// startActivity(i);
-			startActivityForResult(i2, REQUESTCODE);
-			// startActivity(this);
 		default:
 			break;
 		}
