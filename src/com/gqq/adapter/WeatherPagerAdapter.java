@@ -2,12 +2,14 @@ package com.gqq.adapter;
 
 import java.util.*;
 
+import com.gqq.fragment.*;
+
 import android.support.v4.app.*;
 
 public class WeatherPagerAdapter extends FragmentPagerAdapter {
-	private List<Fragment> fragments;
+	private List<WeatherFragment> fragments;
 
-	public WeatherPagerAdapter(FragmentManager fm, List<Fragment> fragments) {
+	public WeatherPagerAdapter(FragmentManager fm, List<WeatherFragment> fragments) {
 		super(fm);
 		this.fragments = fragments;
 	}

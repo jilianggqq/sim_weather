@@ -1,5 +1,9 @@
 package com.gqq.fragment;
 
+import java.text.*;
+import java.util.*;
+
+import android.annotation.SuppressLint;
 import android.os.*;
 import android.support.v4.app.*;
 import android.view.*;
@@ -7,8 +11,9 @@ import android.widget.*;
 
 import com.gqq.androidpku.*;
 import com.gqq.bean.*;
+import com.gqq.util.*;
 
-public class FirstWeatherFragment extends Fragment {
+public class FirstWeatherFragment extends WeatherFragment {
 	private TextView weekTv1, weekTv2, weekTv3;
 	private ImageView weather_imgIv1, weather_imgIv2, weather_imgIv3;
 	private TextView temperatureTv1, temperatureTv2, temperatureTv3;
@@ -16,11 +21,8 @@ public class FirstWeatherFragment extends Fragment {
 	private TextView windTv1, windTv2, windTv3;
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-			Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
-		View view = inflater.inflate(R.layout.weather_item,
-				container, false);
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		View view = inflater.inflate(R.layout.weather_item, container, false);
 		View view1 = view.findViewById(R.id.subitem1);
 		View view2 = view.findViewById(R.id.subitem2);
 		View view3 = view.findViewById(R.id.subitem3);
@@ -43,10 +45,13 @@ public class FirstWeatherFragment extends Fragment {
 		windTv1 = (TextView) view1.findViewById(R.id.wind);
 		windTv2 = (TextView) view2.findViewById(R.id.wind);
 		windTv3 = (TextView) view3.findViewById(R.id.wind);
-		
-		weekTv1.setText("星期五");
-		weekTv2.setText("星期六");
-		weekTv3.setText("星期日");
+
+		weekTv1.setText(DateUtil.getAfterDay(1));
+		weekTv2.setText(DateUtil.getAfterDay(2));
+		weekTv3.setText(DateUtil.getAfterDay(3));
+
+		// weekTv2.setText("星期六");
+		// weekTv3.setText("星期日");
 		climateTv1.setText("N/A");
 		climateTv2.setText("N/A");
 		climateTv3.setText("N/A");
@@ -61,14 +66,44 @@ public class FirstWeatherFragment extends Fragment {
 		return view;
 	}
 
-	public void updateWeather(WeatherInfo weatherinfo) {
-		if (weatherinfo != null) {
+	@SuppressLint("SimpleDateFormat")
+	@Override
+	public void updateWeather(ArrayList<WeatherInfo2> infos, Calendar today) {
+		if (infos != null && infos.size() > 0) {
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 			// 此处需要根据天气数据更新相应的组件中的内容
+			try {
+				for (WeatherInfo2 weatherInfo : infos) {
+					Calendar c = Calendar.getInstance();
+					c.setTime(sdf.parse(weatherInfo.getDate()));
+					int days = c.get(Calendar.DATE) - today.get(Calendar.DATE);
+					switch (days) {
+					case 1:
+						climateTv1.setText(weatherInfo.getWeatherState());
+						temperatureTv1.setText(weatherInfo.getTemper());
+						windTv1.setText(weatherInfo.getWind());
+						break;
+					case 2:
+						climateTv2.setText(weatherInfo.getWeatherState());
+						temperatureTv2.setText(weatherInfo.getTemper());
+						windTv2.setText(weatherInfo.getWind());
+						break;
+					case 3:
+						climateTv3.setText(weatherInfo.getWeatherState());
+						temperatureTv3.setText(weatherInfo.getTemper());
+						windTv3.setText(weatherInfo.getWind());
+						break;
+					default:
+						break;
+					}
+				}
 
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
 		} else {
 			// 此处需要设置图片资源
-			
-			
+
 			climateTv1.setText("N/A");
 			climateTv2.setText("N/A");
 			climateTv3.setText("N/A");

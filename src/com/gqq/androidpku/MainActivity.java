@@ -51,12 +51,15 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 	private final String WEATHER_URL_2 = "http://www.weather.com.cn/data/cityinfo/";
 	// http://gqqapp.sinaapp.com/pm.php
 	private final String WEATHER_URL_3 = "http://gqqapp.sinaapp.com/air.php";
+	private final String WEATHER_URL_4 = "http://192.168.214.6/gqq/weatherapi2.html";
 	private final String BEIJING_CITYCODE = "101010100";
 	private final String HTML = ".html";
 	private final String _N_A = "N/A";
 	private final String CITYTAG = "Cities";
+	private final String ALLWEATHERTAG = "All_weather";
 
 	private WeatherInfo mWeatherInfo;
+	private ArrayList<WeatherInfo2> mHistoryInfos;
 	private String mWeatherState;
 	private String mPM2_5;
 	private String quality;
@@ -70,6 +73,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 	private Map<String, Integer> mBeijingBgImg;// 天气图标
 	private Map<String, Integer> mOtherBgImg;// 天气图标
 	private static final int GET_WEATHER_RESULT = 3;
+	private static final int GET_HISTORY_WEATHER_RESULT = 4;
 	private static final int GET_CITY_FALSE = 98;
 	private static final int RESUME_EXIT_FALSE = 99;
 	private static final int REQUESTCODE = 1;
@@ -84,7 +88,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 	// 加入Fragment的代码
 	private ViewPager mViewPager;
 	private WeatherPagerAdapter mWeatherPagerAdapter;
-	private List<Fragment> fragments;
+	private List<WeatherFragment> fragments;
 
 	// 定义一个Handler，用于线程同步。
 	@SuppressLint("HandlerLeak")
@@ -103,6 +107,9 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 				break;
 			case RESUME_EXIT_FALSE:
 				exitFlag = false;
+				break;
+			case GET_HISTORY_WEATHER_RESULT:
+				updateFragments();
 				break;
 			default:
 				break;
@@ -313,7 +320,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 	 * 初始化Fragment
 	 */
 	private void initFragments() {
-		fragments = new ArrayList<Fragment>();
+		fragments = new ArrayList<WeatherFragment>();
 		fragments.add(new FirstWeatherFragment());
 		fragments.add(new SecondWeatherFragment());
 		mViewPager = (ViewPager) findViewById(R.id.viewpager);
@@ -638,6 +645,18 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 			};
 		}.start();
 
+		new Thread() {
+			public void run() {
+				Log.d(ALLWEATHERTAG, "all infos ...");
+				super.run();
+				String url = WEATHER_URL_4 + "?citycode=" + cityInfo.getCitycode();
+				Log.d(ALLWEATHERTAG, url);
+				String allJsonWeathers = connServerForResult(url);
+				// Log.d(ALLWEATHERTAG, allJsonWeathers);
+				parseHistoryWeaterInfos(allJsonWeathers);
+				mHandler.sendEmptyMessage(GET_HISTORY_WEATHER_RESULT);
+			};
+		}.start();
 	}
 
 	/**
@@ -741,6 +760,53 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 
 			mWeatherInfo = today.getWeatherInfo();
 			// System.out.println("mWheatherInfo:" + mWeatherInfo);
+		}
+	}
+
+	/**
+	 * 将取到的json数据转换为WeatherInfo2的实例数据。 用到了Google的json库。
+	 * 
+	 * @param result
+	 */
+	private void parseHistoryWeaterInfos(String result) {
+
+		// System.out.println("parseTodayWeaterInfo:" + result);
+		if (!TextUtils.isEmpty(result) && !result.contains("error")) {
+
+			JSONArray array;
+			mGson = new Gson();
+			mHistoryInfos = new ArrayList<WeatherInfo2>();
+			try {
+				array = new JSONArray(result);
+
+				for (int i = 0; i < array.length(); i++) {
+					JSONObject jo = array.getJSONObject(i);
+					String jostr = jo.toString();
+
+					WeatherInfo2 info2 = mGson.fromJson(jostr, WeatherInfo2.class);
+					mHistoryInfos.add(info2);
+				}
+
+				Log.d(ALLWEATHERTAG, mHistoryInfos.size() + "");
+
+				for (WeatherInfo2 info2 : mHistoryInfos) {
+					Log.d(ALLWEATHERTAG, info2.toString());
+				}
+
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private void updateFragments() {
+		// fragments.get(0).updateWeather(mHistoryInfos,
+		// DateUtil.getTodayCalendar());
+		// fragments.get(1).updateWeather(mHistoryInfos,
+		// DateUtil.getTodayCalendar());
+		for (WeatherFragment wfg : fragments) {
+			wfg.updateWeather(mHistoryInfos, DateUtil.getTodayCalendar());
 		}
 	}
 

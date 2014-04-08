@@ -3,6 +3,8 @@ package com.gqq.util;
 import java.text.*;
 import java.util.*;
 
+import android.R.*;
+
 public final class DateUtil {
 
 	static Calendar now;
@@ -141,8 +143,26 @@ public final class DateUtil {
 	 * @return
 	 */
 	public static String getDay() {
+		return getDay(today.getDay());
+	}
+
+	private static String getDay(int day) {
 		final String dayNames[] = { "星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六" };
-		return dayNames[today.getDay()];
+		return dayNames[day];
+	}
+
+	public static String getAfterDay(int i) {
+		Calendar after = Calendar.getInstance();
+		// int a1 = after.get(Calendar.DAY_OF_WEEK);
+		after.add(Calendar.DATE, i);
+		int a2 = after.get(Calendar.DAY_OF_WEEK);
+		return getDay(a2 - 1);
+	}
+
+	public static Calendar getTodayCalendar() {
+		Calendar c = Calendar.getInstance();
+		c.setTime(today);
+		return c;
 	}
 
 
