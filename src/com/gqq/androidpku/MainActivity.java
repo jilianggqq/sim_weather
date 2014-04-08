@@ -10,18 +10,13 @@ import org.apache.http.impl.client.*;
 import org.apache.http.util.*;
 import org.json.*;
 
-import android.R.*;
 import android.annotation.*;
 import android.app.*;
 import android.content.*;
-import android.content.res.*;
-import android.graphics.*;
-import android.graphics.drawable.*;
 import android.net.*;
 import android.os.*;
 import android.os.Process;
 import android.support.v4.app.*;
-import android.support.v4.app.Fragment;
 import android.support.v4.view.*;
 import android.text.*;
 import android.util.*;
@@ -36,9 +31,9 @@ import com.gqq.app.*;
 import com.gqq.bean.*;
 import com.gqq.fragment.*;
 import com.gqq.util.*;
-import com.umeng.analytics.MobclickAgent;
-import com.umeng.fb.FeedbackAgent;
-import com.umeng.update.UmengUpdateAgent;
+import com.umeng.analytics.*;
+import com.umeng.fb.*;
+import com.umeng.update.*;
 
 public class MainActivity extends FragmentActivity implements View.OnClickListener {
 	String tag = "生命周期";
@@ -51,14 +46,16 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 	private final String WEATHER_URL_2 = "http://www.weather.com.cn/data/cityinfo/";
 	// http://gqqapp.sinaapp.com/pm.php
 	private final String WEATHER_URL_3 = "http://gqqapp.sinaapp.com/air.php";
-	private final String WEATHER_URL_4 = "http://192.168.214.6/gqq/weatherapi2.html";
+	private final String WEATHER_URL_4 = "http://gqqapp.sinaapp.com/weatherapi2.php";
 	private final String BEIJING_CITYCODE = "101010100";
 	private final String HTML = ".html";
 	private final String _N_A = "N/A";
 	private final String CITYTAG = "Cities";
 	private final String ALLWEATHERTAG = "All_weather";
+	private final String ERROR = "ERROR";
 
 	private WeatherInfo mWeatherInfo;
+	private PicUtil mPicUtil = PicUtil.getInstance();
 	private ArrayList<WeatherInfo2> mHistoryInfos;
 	private String mWeatherState;
 	private String mPM2_5;
@@ -69,9 +66,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 	private BasicCityInfo cityInfo = new BasicCityInfo("北京", "北京");
 
 	private Gson mGson;
-	private Map<String, Integer> mWeatherIcon;// 天气图标
-	private Map<String, Integer> mBeijingBgImg;// 天气图标
-	private Map<String, Integer> mOtherBgImg;// 天气图标
+
 	private static final int GET_WEATHER_RESULT = 3;
 	private static final int GET_HISTORY_WEATHER_RESULT = 4;
 	private static final int GET_CITY_FALSE = 98;
@@ -153,97 +148,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 
 	}
 
-	/**
-	 * 初始化图片字典
-	 */
-	private void initWeatherIconMap() {
-		mWeatherIcon = new HashMap<String, Integer>();
-		mWeatherIcon.put("暴雪", R.drawable.biz_plugin_weather_baoxue);
-		mWeatherIcon.put("暴雨", R.drawable.biz_plugin_weather_baoyu);
-		mWeatherIcon.put("大暴雨", R.drawable.biz_plugin_weather_dabaoyu);
-		mWeatherIcon.put("大雪", R.drawable.biz_plugin_weather_daxue);
-		mWeatherIcon.put("大雨", R.drawable.biz_plugin_weather_dayu);
 
-		mWeatherIcon.put("多云", R.drawable.biz_plugin_weather_duoyun);
-		mWeatherIcon.put("雷阵雨", R.drawable.biz_plugin_weather_leizhenyu);
-		mWeatherIcon.put("雷阵雨冰雹", R.drawable.biz_plugin_weather_leizhenyubingbao);
-		mWeatherIcon.put("晴", R.drawable.biz_plugin_weather_qing);
-		mWeatherIcon.put("沙尘暴", R.drawable.biz_plugin_weather_shachenbao);
-
-		mWeatherIcon.put("特大暴雨", R.drawable.biz_plugin_weather_tedabaoyu);
-		mWeatherIcon.put("雾", R.drawable.biz_plugin_weather_wu);
-		mWeatherIcon.put("小雪", R.drawable.biz_plugin_weather_xiaoxue);
-		mWeatherIcon.put("小雨", R.drawable.biz_plugin_weather_xiaoyu);
-		mWeatherIcon.put("阴", R.drawable.biz_plugin_weather_yin);
-
-		mWeatherIcon.put("雨夹雪", R.drawable.biz_plugin_weather_yujiaxue);
-		mWeatherIcon.put("阵雪", R.drawable.biz_plugin_weather_zhenxue);
-		mWeatherIcon.put("阵雨", R.drawable.biz_plugin_weather_zhenyu);
-		mWeatherIcon.put("中雪", R.drawable.biz_plugin_weather_zhongxue);
-		mWeatherIcon.put("中雨", R.drawable.biz_plugin_weather_zhongyu);
-	}
-
-	/**
-	 * 初始化北京背景图片
-	 */
-	private void initBeijingBgMap() {
-		mBeijingBgImg = new HashMap<String, Integer>();
-		mBeijingBgImg.put("暴雪", R.drawable.biz_plugin_weather_beijing_yu_bg);
-		mBeijingBgImg.put("暴雨", R.drawable.biz_plugin_weather_beijing_yu_bg);
-		mBeijingBgImg.put("大暴雨", R.drawable.biz_plugin_weather_beijing_yu_bg);
-		mBeijingBgImg.put("大雪", R.drawable.biz_plugin_weather_beijing_yu_bg);
-		mBeijingBgImg.put("大雨", R.drawable.biz_plugin_weather_beijing_yu_bg);
-
-		mBeijingBgImg.put("多云", R.drawable.biz_plugin_weather_beijing_yin_bg);
-		mBeijingBgImg.put("雷阵雨", R.drawable.biz_plugin_weather_beijing_yu_bg);
-		mBeijingBgImg.put("雷阵雨冰雹", R.drawable.biz_plugin_weather_beijing_yu_bg);
-		mBeijingBgImg.put("晴", R.drawable.biz_plugin_weather_beijing_qing_bg);
-		mBeijingBgImg.put("沙尘暴", R.drawable.biz_plugin_weather_beijing_mai_bg);
-
-		mBeijingBgImg.put("特大暴雨", R.drawable.biz_plugin_weather_beijing_yu_bg);
-		mBeijingBgImg.put("雾", R.drawable.biz_plugin_weather_beijing_mai_bg);
-		mBeijingBgImg.put("霾", R.drawable.biz_plugin_weather_beijing_mai_bg);
-		mBeijingBgImg.put("小雪", R.drawable.biz_plugin_weather_beijing_yu_bg);
-		mBeijingBgImg.put("小雨", R.drawable.biz_plugin_weather_beijing_yu_bg);
-		mBeijingBgImg.put("阴", R.drawable.biz_plugin_weather_beijing_yin_bg);
-
-		mBeijingBgImg.put("雨夹雪", R.drawable.biz_plugin_weather_beijing_yu_bg);
-		mBeijingBgImg.put("阵雪", R.drawable.biz_plugin_weather_beijing_yu_bg);
-		mBeijingBgImg.put("阵雨", R.drawable.biz_plugin_weather_beijing_yu_bg);
-		mBeijingBgImg.put("中雪", R.drawable.biz_plugin_weather_beijing_yu_bg);
-		mBeijingBgImg.put("中雨", R.drawable.biz_plugin_weather_beijing_yu_bg);
-	}
-
-	/**
-	 * 初始化其它各地背景图片
-	 */
-	private void initOtherBgMap() {
-		mOtherBgImg = new HashMap<String, Integer>();
-		mOtherBgImg.put("暴雪", R.drawable.biz_plugin_weather_zg_yu_bg);
-		mOtherBgImg.put("暴雨", R.drawable.biz_plugin_weather_zg_yu_bg);
-		mOtherBgImg.put("大暴雨", R.drawable.biz_plugin_weather_zg_yu_bg);
-		mOtherBgImg.put("大雪", R.drawable.biz_plugin_weather_zg_yu_bg);
-		mOtherBgImg.put("大雨", R.drawable.biz_plugin_weather_zg_yu_bg);
-
-		mOtherBgImg.put("多云", R.drawable.biz_plugin_weather_zg_yin_bg);
-		mOtherBgImg.put("雷阵雨", R.drawable.biz_plugin_weather_zg_yu_bg);
-		mOtherBgImg.put("雷阵雨冰雹", R.drawable.biz_plugin_weather_zg_yu_bg);
-		mOtherBgImg.put("晴", R.drawable.biz_plugin_weather_zg_qing_bg);
-		mOtherBgImg.put("沙尘暴", R.drawable.biz_plugin_weather_zg_yin_bg);
-
-		mOtherBgImg.put("特大暴雨", R.drawable.biz_plugin_weather_zg_yu_bg);
-		mOtherBgImg.put("雾", R.drawable.biz_plugin_weather_zg_yin_bg);
-		mOtherBgImg.put("霾", R.drawable.biz_plugin_weather_zg_yin_bg);
-		mOtherBgImg.put("小雪", R.drawable.biz_plugin_weather_zg_yu_bg);
-		mOtherBgImg.put("小雨", R.drawable.biz_plugin_weather_zg_yu_bg);
-		mOtherBgImg.put("阴", R.drawable.biz_plugin_weather_zg_yin_bg);
-
-		mOtherBgImg.put("雨夹雪", R.drawable.biz_plugin_weather_zg_yu_bg);
-		mOtherBgImg.put("阵雪", R.drawable.biz_plugin_weather_zg_yu_bg);
-		mOtherBgImg.put("阵雨", R.drawable.biz_plugin_weather_zg_yu_bg);
-		mOtherBgImg.put("中雪", R.drawable.biz_plugin_weather_zg_yu_bg);
-		mOtherBgImg.put("中雨", R.drawable.biz_plugin_weather_zg_yu_bg);
-	}
 
 	// http://www.weather.cn
 	@Override
@@ -260,20 +165,12 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 		agent = new FeedbackAgent(this);
 		agent.sync();
 
-		initWeatherIconMap();
-		initBeijingBgMap();
-		initOtherBgMap();
-
 		requestWindowFeature(Window.FEATURE_NO_TITLE);//
 		setContentView(R.layout.activity_main);
 		init();
 
 		mCityManagerBtn = (ImageView) findViewById(R.id.title_city_manager);
 		mCityManagerBtn.setOnClickListener(this);
-
-		// 百度定位的测试
-		// mTestlocBtn = (Button) findViewById(R.id.btn_testloc);
-		// mTestlocBtn.setOnClickListener(this);
 
 		mUpdate = (ImageView) findViewById(R.id.title_update);
 		imgRefresh = (ImageView) findViewById(R.id.imgRefresh);
@@ -305,16 +202,6 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 		setAutoUpdate();
 	}
 
-	private boolean initContentView() {
-		SharedPreferences appPrefs = getSharedPreferences("start_info", MODE_PRIVATE);
-		// SharedPreferences.Editor prefsEditor = appPrefs.edit();
-		// prefsEditor.clear();
-		String value = appPrefs.getString("start", "");
-		if ("".equals(value)) {
-			return false;
-		}
-		return false;
-	}
 
 	/**
 	 * 初始化Fragment
@@ -526,7 +413,6 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 
 	private ImageView mCityManagerBtn, mUpdate, imgRefresh, mLocation, mFeedback, mShare;
 
-	private Button mTestlocBtn;
 
 	/**
 	 * 如果从intent返回了数值，和文件中比对，看是否需要更新天气。
@@ -608,41 +494,21 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 			return;
 		}
 		T.showShort(this, "正在更新天气");
+
+		// 这种情况下，表示城市名是对的，但是城市的code不一定对，因为百度的接口没有返回code
+		if (needUpdateCitycode) {
+			if (!updateCitycode()) {
+				mHandler.sendEmptyMessage(GET_CITY_FALSE);
+				return;
+			}
+		}
+
 		new Thread() {
 			public void run() {
 				super.run();
-				// 测试转圈的代码，
-				// try {
-				// this.sleep(1000);
-				// } catch (InterruptedException e) {
-				// e.printStackTrace();
-				// }
-				// 这种情况下，表示城市名是对的，但是城市的code不一定对，因为百度的接口没有返回code
-				if (needUpdateCitycode) {
-					if (!updateCitycode()) {
-						mHandler.sendEmptyMessage(GET_CITY_FALSE);
-						return;
-					}
-				}
-
 				getTodayWeatherInfo();
 				mHandler.sendEmptyMessage(GET_WEATHER_RESULT);
 			}
-
-			private boolean updateCitycode() {
-				CityDB cityDB = new CityDB(getBaseContext(), "city.db");
-				try {
-					City city = cityDB.getCity(cityInfo.getCityname());
-					cityInfo.setCitycode(city.getNumber());
-					cityDB.closeDB();
-					return true;
-				} catch (Exception e) {
-					cityDB.closeDB();
-					Log.d(baidumaptag, e.getMessage());
-					return false;
-				}
-
-			};
 		}.start();
 
 		new Thread() {
@@ -658,6 +524,21 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 			};
 		}.start();
 	}
+
+	private boolean updateCitycode() {
+		CityDB cityDB = new CityDB(getBaseContext(), "city.db");
+		try {
+			City city = cityDB.getCity(cityInfo.getCityname());
+			cityInfo.setCitycode(city.getNumber());
+			cityDB.closeDB();
+			return true;
+		} catch (Exception e) {
+			cityDB.closeDB();
+			Log.d(baidumaptag, e.getMessage());
+			return false;
+		}
+
+	};
 
 	/**
 	 * 获得现在的天气
@@ -776,7 +657,22 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 			JSONArray array;
 			mGson = new Gson();
 			mHistoryInfos = new ArrayList<WeatherInfo2>();
+
+			if (result.contains("error")) {
+				JSONObject jo;
+				try {
+					jo = new JSONObject(result);
+					String errmsg = jo.getString("error");
+					Log.d(ERROR, errmsg);
+				} catch (JSONException e) {
+					e.printStackTrace();
+					Log.d(ERROR, e.getMessage());
+				}
+				return;
+			}
+
 			try {
+				// Log.d(ALLWEATHERTAG, result);
 				array = new JSONArray(result);
 
 				for (int i = 0; i < array.length(); i++) {
@@ -788,13 +684,12 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 				}
 
 				Log.d(ALLWEATHERTAG, mHistoryInfos.size() + "");
-
-				for (WeatherInfo2 info2 : mHistoryInfos) {
-					Log.d(ALLWEATHERTAG, info2.toString());
-				}
+				//
+				// for (WeatherInfo2 info2 : mHistoryInfos) {
+				// Log.d(ALLWEATHERTAG, info2.toString());
+				// }
 
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -827,7 +722,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 			humidityTv.setText(mWeatherInfo.getSD());
 			timeTv.setText("今日" + mWeatherInfo.getTime() + "发布");
 			windTv.setText(mWeatherInfo.getWD() + " " + mWeatherInfo.getWS());
-			weatherImg.setImageResource(getWeatherIcon());
+			weatherImg.setImageResource(mPicUtil.getWeatherIcon(mWeatherState));
 			provinceTv.setText(cityInfo.getProvince());
 
 		} else {
@@ -868,22 +763,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 		// updateWeatherIcon(mWheatherInfo.get);
 	}
 
-	/**
-	 * 获得图片图标。
-	 * 
-	 * @return
-	 */
-	public int getWeatherIcon() {
-		// climate = "小雨";
-		int weatherRes = R.drawable.biz_plugin_weather_qing;
-		String climate = getClimate();
-		if (TextUtils.isEmpty(climate))
-			return weatherRes;
-		if (mWeatherIcon.containsKey(climate)) {
-			weatherRes = mWeatherIcon.get(climate);
-		}
-		return weatherRes;
-	}
+
 
 	/**
 	 * 获得背景图片
@@ -898,33 +778,25 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 		else {
 			weatherRes = R.drawable.biz_plugin_weather_zg_yin_bg;
 		}
-		String climate = getClimate();
+		String climate = PicUtil.getClimate(mWeatherState);
 		if (TextUtils.isEmpty(climate))
 			return weatherRes;
 
-		if ("北京".equals(cityInfo.getProvince()) && mBeijingBgImg.containsKey(climate)) {
-			weatherRes = mBeijingBgImg.get(climate);
+		if ("北京".equals(cityInfo.getProvince()) && mPicUtil.getmBeijingBgImg().containsKey(climate)) {
+			weatherRes = mPicUtil.getmBeijingBgImg().get(climate);
 		} else {
-			weatherRes = mOtherBgImg.get(climate);
+			weatherRes = mPicUtil.getmOtherBgImg().get(climate);
 		}
 
 		return weatherRes;
 	}
 
-	private String getClimate() {
-		String climate = mWeatherState;
-		String[] strs = { "晴", "晴" };
-		if (climate.contains("转")) {// 天气带转字，取前面那部分
-			strs = climate.split("转");
-			climate = strs[0];
-			if (climate.contains("到")) {// 如果转字前面那部分带到字，则取它的后部分
-				strs = climate.split("到");
-				climate = strs[1];
-			}
-		}
-		return climate;
-	}
-
+	/**
+	 * 百度定位的Listener
+	 * 
+	 * @author gqq
+	 * 
+	 */
 	class myLocationListener implements BDLocationListener {
 
 		@Override
@@ -977,6 +849,8 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 			String province = location.getProvince();
 			province = province.substring(0, province.length() - 1);
 			cityInfo.setProvince(province);
+			// cityInfo.setCitycode(location.get())
+			Log.d("citycode", location.getCityCode());
 			// 更新已存在的文件
 			mLocClient.stop();
 			// 在子线程中，我们再去数据库中查询citycode，免得主线程太慢。
@@ -1103,6 +977,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 	/**
 	 * 测试拷贝数据库
 	 */
+	@SuppressLint("SdCardPath")
 	public void doCopy() {
 		try {
 			String destPath = "/data/data/" + getPackageName() + "/databases";
