@@ -62,7 +62,7 @@
             android:name="UMENG_CHANNEL"
             android:value="Channel ID" />
 		<activity
-            android:name="com.gqq.androidpku.SplashActivity"
+            android:name=".SplashActivity"
             android:configChanges="keyboardHidden"
             android:label="@string/app_name"
             android:launchMode="singleTask"
@@ -85,7 +85,6 @@
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MainActivity" />
-
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
