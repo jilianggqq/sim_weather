@@ -102,6 +102,7 @@ public class PicUtil {
 		mBeijingBgImg.put("特大暴雨", R.drawable.biz_plugin_weather_beijing_yu_bg);
 		mBeijingBgImg.put("雾", R.drawable.biz_plugin_weather_beijing_mai_bg);
 		mBeijingBgImg.put("霾", R.drawable.biz_plugin_weather_beijing_mai_bg);
+		mBeijingBgImg.put("浮尘", R.drawable.biz_plugin_weather_beijing_mai_bg);
 		mBeijingBgImg.put("小雪", R.drawable.biz_plugin_weather_beijing_yu_bg);
 		mBeijingBgImg.put("小雨", R.drawable.biz_plugin_weather_beijing_yu_bg);
 		mBeijingBgImg.put("阴", R.drawable.biz_plugin_weather_beijing_yin_bg);
@@ -133,6 +134,7 @@ public class PicUtil {
 		mOtherBgImg.put("特大暴雨", R.drawable.biz_plugin_weather_zg_yu_bg);
 		mOtherBgImg.put("雾", R.drawable.biz_plugin_weather_zg_yin_bg);
 		mOtherBgImg.put("霾", R.drawable.biz_plugin_weather_zg_yin_bg);
+		mOtherBgImg.put("浮尘", R.drawable.biz_plugin_weather_zg_yin_bg);
 		mOtherBgImg.put("小雪", R.drawable.biz_plugin_weather_zg_yu_bg);
 		mOtherBgImg.put("小雨", R.drawable.biz_plugin_weather_zg_yu_bg);
 		mOtherBgImg.put("阴", R.drawable.biz_plugin_weather_zg_yin_bg);

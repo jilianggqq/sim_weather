@@ -145,7 +145,6 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 	private void rotateBigIcon() {
 		if (operatingAnim != null)
 			imgRefresh.startAnimation(operatingAnim);
-
 	}
 
 
@@ -440,6 +439,9 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 		}
 	}
 
+	/**
+	 * 更新shared preference文件。
+	 */
 	public void updateFile() {
 		SharedPreferences appPrefs = getSharedPreferences("selected_info", MODE_PRIVATE);
 		SharedPreferences.Editor prefsEditor = appPrefs.edit();
@@ -511,6 +513,9 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 			}
 		}.start();
 
+		/**
+		 * 从网络获取数据，更新fragment
+		 */
 		new Thread() {
 			public void run() {
 				Log.d(ALLWEATHERTAG, "all infos ...");
@@ -525,6 +530,11 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 		}.start();
 	}
 
+	/**
+	 * 通过城市名得到城市的citycode
+	 * 
+	 * @return
+	 */
 	private boolean updateCitycode() {
 		CityDB cityDB = new CityDB(getBaseContext(), "city.db");
 		try {
@@ -672,7 +682,6 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 			}
 
 			try {
-				// Log.d(ALLWEATHERTAG, result);
 				array = new JSONArray(result);
 
 				for (int i = 0; i < array.length(); i++) {
@@ -684,10 +693,6 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 				}
 
 				Log.d(ALLWEATHERTAG, mHistoryInfos.size() + "");
-				//
-				// for (WeatherInfo2 info2 : mHistoryInfos) {
-				// Log.d(ALLWEATHERTAG, info2.toString());
-				// }
 
 			} catch (JSONException e) {
 				e.printStackTrace();
@@ -696,10 +701,6 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 	}
 
 	private void updateFragments() {
-		// fragments.get(0).updateWeather(mHistoryInfos,
-		// DateUtil.getTodayCalendar());
-		// fragments.get(1).updateWeather(mHistoryInfos,
-		// DateUtil.getTodayCalendar());
 		for (WeatherFragment wfg : fragments) {
 			wfg.updateWeather(mHistoryInfos, DateUtil.getTodayCalendar());
 		}
@@ -781,7 +782,6 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 		String climate = PicUtil.getClimate(mWeatherState);
 		if (TextUtils.isEmpty(climate))
 			return weatherRes;
-
 		if ("北京".equals(cityInfo.getProvince()) && mPicUtil.getmBeijingBgImg().containsKey(climate)) {
 			weatherRes = mPicUtil.getmBeijingBgImg().get(climate);
 		} else {
@@ -842,6 +842,8 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 
 			// 刷新天气
 			String cityname = location.getDistrict();
+			if (null == cityname)
+				cityname = location.getCity();
 			// 设置城市名
 			cityname = cityname.substring(0, cityname.length() - 1);
 			cityInfo.setCityname(cityname);
