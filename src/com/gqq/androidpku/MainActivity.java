@@ -30,6 +30,7 @@ import com.gqq.adapter.*;
 import com.gqq.app.*;
 import com.gqq.bean.*;
 import com.gqq.fragment.*;
+import com.gqq.service.*;
 import com.gqq.util.*;
 import com.umeng.analytics.*;
 import com.umeng.fb.*;
@@ -111,7 +112,14 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 			}
 		}
 
+
 	};
+
+	private void doStartService() {
+		Intent intent = new Intent(getBaseContext(),WeatherUpdateService.class);
+		intent.putExtra("city", cityInfo.getCityname());
+		startService(intent);
+	}
 
 	/**
 	 * 恢复，转圈停止，rooter消失

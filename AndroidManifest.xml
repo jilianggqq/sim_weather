@@ -35,6 +35,21 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
+        <receiver
+            android:name="com.gqq.androidpku.WeatherWidget"
+            android:label="@string/biz_widget_4_2" >
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/weather_widget_4x2" />
+        </receiver>
+
+        <service android:name="com.gqq.service.WeatherUpdateService" >
+        </service>
+
         <activity android:name="com.umeng.fb.ConversationActivity" />
         <activity android:name="com.umeng.fb.ContactActivity" />
 
@@ -61,7 +76,8 @@
         <meta-data
             android:name="UMENG_CHANNEL"
             android:value="Channel ID" />
-		<activity
+
+        <activity
             android:name=".SplashActivity"
             android:configChanges="keyboardHidden"
             android:label="@string/app_name"
@@ -70,21 +86,21 @@
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-		<activity
+        <activity
             android:name="com.gqq.androidpku.GuideActivity"
             android:configChanges="keyboardHidden"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen" />
-        
         <activity
             android:name="com.gqq.androidpku.MainActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MainActivity" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
