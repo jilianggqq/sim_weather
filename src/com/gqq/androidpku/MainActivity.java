@@ -38,6 +38,9 @@ import com.umeng.update.*;
 
 public class MainActivity extends FragmentActivity implements View.OnClickListener {
 	String tag = "生命周期";
+
+	public static final String UPDATE_WIDGET_WEATHER_ACTION = "com.gqq.action.update_weather";
+	public static final String UPDATE_WIDGET_WEATHER_Test = "com.gqq.action.weather.test";
 	CharSequence[] items = { "Google", "Apple", "Microsoft" };
 	boolean[] itemsChecked = new boolean[items.length];
 	ProgressDialog progressDialog;
@@ -52,6 +55,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 	private final String HTML = ".html";
 	private final String _N_A = "N/A";
 	private final String CITYTAG = "Cities";
+	public static final String SERVICE_TAG = "Services";
 	private final String ALLWEATHERTAG = "All_weather";
 	private final String ERROR = "ERROR";
 
@@ -61,6 +65,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 	private String mWeatherState;
 	private String mPM2_5;
 	private String quality;
+	private SharePreferenceUtil mSpUtil;
 	// private String citycode;
 	// private String province = "北京";
 	// private String cityname = "北京";
@@ -68,12 +73,13 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 
 	private Gson mGson;
 
-	private static final int GET_WEATHER_RESULT = 3;
+	public static final int GET_WEATHER_RESULT = 3;
 	private static final int GET_HISTORY_WEATHER_RESULT = 4;
 	private static final int GET_CITY_FALSE = 98;
 	private static final int RESUME_EXIT_FALSE = 99;
 	private static final int REQUESTCODE = 1;
 	private static final String baidumaptag = "baidumap";
+	// protected static final int GET_WEATHER_SCUESS = 0;
 
 	private boolean exitFlag = false;
 	Animation operatingAnim;
@@ -85,6 +91,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 	private ViewPager mViewPager;
 	private WeatherPagerAdapter mWeatherPagerAdapter;
 	private List<WeatherFragment> fragments;
+	private WeatherUpdateService updateService;
 
 	// 定义一个Handler，用于线程同步。
 	@SuppressLint("HandlerLeak")
@@ -97,6 +104,8 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 				resumeUpdateIcon();
 				// 保存缓存文档，下次进入后自动加载
 				updateFile();
+				// 更新服务
+				updateService();
 				break;
 			case GET_CITY_FALSE:
 				resumeUpdateIcon();
@@ -112,13 +121,39 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 			}
 		}
 
-
 	};
 
-	private void doStartService() {
-		Intent intent = new Intent(getBaseContext(),WeatherUpdateService.class);
-		intent.putExtra("city", cityInfo.getCityname());
-		startService(intent);
+	/**
+	 * 定义connection，用于activity和application之间的通信。
+	 */
+	ServiceConnection connection = new ServiceConnection() {
+
+		@Override
+		public void onServiceConnected(ComponentName name, IBinder service) {
+			Log.d(SERVICE_TAG, "connection connected");
+			updateService = ((WeatherUpdateService.MsgBinder) service).getService();
+			MyApplication.getInstance().setmWeatherInfo(mWeatherInfo);
+			updateService.updateServiceByActivity();
+		}
+
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
+			Log.d(SERVICE_TAG, "connection disconnected");
+
+		}
+	};
+
+	/**
+	 * 更新服务端的内容，让服务更新widget
+	 */
+	private void updateService() {
+		Log.d("BroadCast", "send broadcast");
+		// Intent intent = new Intent(this, WeatherUpdateService.class);
+		// // startService(intent);
+		// bindService(intent, connection, Context.BIND_AUTO_CREATE);
+		// startService(intent);
+		sendBroadcast(new Intent(UPDATE_WIDGET_WEATHER_ACTION));
+		sendBroadcast(new Intent(UPDATE_WIDGET_WEATHER_Test));
 	}
 
 	/**
@@ -155,8 +190,6 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 			imgRefresh.startAnimation(operatingAnim);
 	}
 
-
-
 	// http://www.weather.cn
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -186,6 +219,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 		mFeedback.setOnClickListener(this);
 		mShare = (ImageView) findViewById(R.id.title_share);
 		mShare.setOnClickListener(this);
+		mSpUtil = MyApplication.getInstance().getSharePreferenceUtil();
 
 		// 设置旋转变量
 		operatingAnim = AnimationUtils.loadAnimation(this, R.anim.update_anim);
@@ -198,6 +232,8 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 		mLocation.setOnClickListener(this);
 		mLocClient.registerLocationListener(new myLocationListener());
 
+		startService(new Intent(this, WeatherUpdateService.class));
+
 		// 初始化fragments
 		initFragments();
 
@@ -208,7 +244,6 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 		// 设置自动更新
 		setAutoUpdate();
 	}
-
 
 	/**
 	 * 初始化Fragment
@@ -288,6 +323,12 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
+		// try {
+		// unbindService(connection);
+		//
+		// } catch (Exception e) {
+		// // TODO: handle exception
+		// }
 		Log.d(tag, "ondestroy");
 	}
 
@@ -420,7 +461,6 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 
 	private ImageView mCityManagerBtn, mUpdate, imgRefresh, mLocation, mFeedback, mShare;
 
-
 	/**
 	 * 如果从intent返回了数值，和文件中比对，看是否需要更新天气。
 	 */
@@ -458,6 +498,13 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 		prefsEditor.putString("citycode", cityInfo.getCitycode());
 		prefsEditor.putString("province", cityInfo.getProvince());
 		prefsEditor.commit();
+		WeatherInfo allWeather = mWeatherInfo;
+		mSpUtil.setSimpleTemp(allWeather.getTemp() + "°");
+		mSpUtil.setSimpleDate(allWeather.getDate().substring(5));
+		mSpUtil.setSimpleDay(allWeather.getDay().replace("星期", "周"));
+		mSpUtil.setSimpleClimate(allWeather.getWeatherState());
+		mSpUtil.setCity(allWeather.getCity());
+		mSpUtil.setSimpleLunar(allWeather.getLunar().substring(5));
 	}
 
 	/**
@@ -618,6 +665,15 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
+
+		mWeatherInfo.setQuality(quality);
+		mWeatherInfo.setPm2_5(mPM2_5);
+		mWeatherInfo.setWeatherState(mWeatherState);
+		mWeatherInfo.setDay(DateUtil.getDay());
+		mWeatherInfo.setDate(DateUtil.getTodaystr("yyyy/MM/dd"));
+		Lunar lunar = new Lunar(DateUtil.getNow());
+		mWeatherInfo.setLunar(lunar.toString());
+
 	}
 
 	/**
@@ -771,8 +827,6 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 		// 测试图片转换
 		// updateWeatherIcon(mWheatherInfo.get);
 	}
-
-
 
 	/**
 	 * 获得背景图片

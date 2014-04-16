@@ -13,6 +13,38 @@ public class WeatherInfo {
 	private String isRadar;
 	private String Radar;
 
+	private String weatherState;
+	private String day;
+	private String date;
+	private String lunar;
+
+	public String getWeatherState() {
+		return weatherState;
+	}
+
+	public void setWeatherState(String weatherState) {
+		this.weatherState = weatherState;
+	}
+
+	public String getQuality() {
+		return quality;
+	}
+
+	public void setQuality(String quality) {
+		this.quality = quality;
+	}
+
+	public String getPm2_5() {
+		return pm2_5;
+	}
+
+	public void setPm2_5(String pm2_5) {
+		this.pm2_5 = pm2_5;
+	}
+
+	private String quality;
+	private String pm2_5;
+
 	public String getCity() {
 		return city;
 	}
@@ -93,11 +125,57 @@ public class WeatherInfo {
 		Radar = radar;
 	}
 
+	/**
+	 * @return the day
+	 */
+	public String getDay() {
+		return day;
+	}
+
+	/**
+	 * @param day
+	 *            the day to set
+	 */
+	public void setDay(String day) {
+		this.day = day;
+	}
+
+	/**
+	 * @return the date
+	 */
+	public String getDate() {
+		return date;
+	}
+
+	/**
+	 * @param date
+	 *            the date to set
+	 */
+	public void setDate(String date) {
+		this.date = date;
+	}
+
 	@Override
 	public String toString() {
 		return "WeatherInfo [city=" + city + ", cityid=" + cityid + ", temp=" + temp + ", WD=" + WD
 				+ ", WS=" + WS + ", SD=" + SD + ", WSE=" + WSE + ", time=" + time + ", isRadar="
-				+ isRadar + ", Radar=" + Radar + "]";
+				+ isRadar + ", Radar=" + Radar + ", quality=" + quality + ", pm2_5=" + pm2_5
+				+ ", weatherState=" + weatherState + ", day=" + day + ", date=" + date + ", lunar="
+				+ lunar + "]";
 	}
 
+	/**
+	 * @return the lunar
+	 */
+	public String getLunar() {
+		return lunar;
+	}
+
+	/**
+	 * @param lunar
+	 *            the lunar to set
+	 */
+	public void setLunar(String lunar) {
+		this.lunar = lunar;
+	}
 }

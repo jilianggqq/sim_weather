@@ -77,6 +77,17 @@ public final class DateUtil {
 
 	}
 
+	public static long getLongTime(String time) {
+		try {
+			time = time.substring(0, time.indexOf('.'));
+			Date date = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").parse(time);
+			return date.getTime();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return 0L;
+	}
+
 	/**
 	 * 把Unix时间戳转化为java日期
 	 * 
@@ -134,6 +145,16 @@ public final class DateUtil {
 	 */
 	public static String getTodaystr() {
 		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		return df.format(today);
+	}
+
+	/**
+	 * 以字符串的形式返回今天日期
+	 * 
+	 * @return
+	 */
+	public static String getTodaystr(String format) {
+		SimpleDateFormat df = new SimpleDateFormat(format);
 		return df.format(today);
 	}
 
